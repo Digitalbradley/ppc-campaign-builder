@@ -1,5 +1,6 @@
 import streamlit as st
 import pandas as pd
+import numpy as np
 
 @st.cache_data
 def load_and_transform_knowledge_base():
@@ -11,28 +12,23 @@ def load_and_transform_knowledge_base():
         
         # Get unique seniority levels
         seniority_cols = [col for col in roles_df.columns if 'Seniority_Level_' in col]
-        seniority_levels = roles_df[seniority_cols].values.flatten().unique()
-        seniority_levels = [x for x in seniority_levels if str(x) != 'nan']
+        seniority_levels = pd.Series(roles_df[seniority_cols].values.ravel()).dropna().unique()
         
         # Get unique departments
         dept_cols = [col for col in roles_df.columns if 'Department_' in col]
-        departments = roles_df[dept_cols].values.flatten().unique()
-        departments = [x for x in departments if str(x) != 'nan']
+        departments = pd.Series(roles_df[dept_cols].values.ravel()).dropna().unique()
         
         # Get pain points
         pain_point_cols = [col for col in features_df.columns if 'Pain_Point_' in col]
-        pain_points = features_df[pain_point_cols].values.flatten().unique()
-        pain_points = [x for x in pain_points if str(x) != 'nan']
+        pain_points = pd.Series(features_df[pain_point_cols].values.ravel()).dropna().unique()
         
         # Get value propositions
         value_prop_cols = [col for col in features_df.columns if 'Value Prop_' in col]
-        value_props = features_df[value_prop_cols].values.flatten().unique()
-        value_props = [x for x in value_props if str(x) != 'nan']
+        value_props = pd.Series(features_df[value_prop_cols].values.ravel()).dropna().unique()
         
         # Get business outcomes
         outcome_cols = [col for col in features_df.columns if 'Business Outcomes_' in col]
-        outcomes = features_df[outcome_cols].values.flatten().unique()
-        outcomes = [x for x in outcomes if str(x) != 'nan']
+        outcomes = pd.Series(features_df[outcome_cols].values.ravel()).dropna().unique()
         
         return seniority_levels, departments, pain_points, value_props, outcomes, roles_df, features_df, audience_df
     
