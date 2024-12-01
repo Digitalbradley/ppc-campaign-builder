@@ -7,6 +7,7 @@ def load_role_files():
    try:
        # Load all role CSV files
        roles = {
+           'General Targeting': None,  # Will handle this case separately
            'Chief Customer Officer': pd.read_csv('chief-customer-officer.csv'),
            'VP Customer Support': pd.read_csv('vp-customer-support.csv'),
            'Senior Director Support': pd.read_csv('senior-director-support.csv'),
@@ -22,6 +23,27 @@ def load_role_files():
    except Exception as e:
        st.error(f"Error loading role files: {e}")
        return None
+
+def get_general_targeting_data(role_data):
+   # Combine data from all roles for general targeting
+   all_pain_points = set()
+   all_value_props = set()
+   
+   for role_df in role_data.values():
+       if role_df is not None:  # Skip the None value for General Targeting
+           # Get pain points
+           pain_point_cols = [col for col in role_df.columns if 'Pain_Point_' in col]
+           all_pain_points.update(role_df[pain_point_cols].values.flatten())
+           
+           # Get value props
+           value_prop_cols = [col for col in role_df.columns if 'Value_Prop_' in col]
+           all_value_props.update(role_df[value_prop_cols].values.flatten())
+   
+   # Remove any nan values
+   all_pain_points = {p for p in all_pain_points if isinstance(p, str)}
+   all_value_props = {v for v in all_value_props if isinstance(v, str)}
+   
+   return list(all_pain_points), list(all_value_props)
 
 def main():
    st.title("PPC Campaign Builder")
@@ -58,24 +80,29 @@ def main():
        placeholder="Example: Looking to increase free trial signups by targeting directors and VPs with a focus on team efficiency and cost savings"
    )
    
-   # Get data for selected role
-   role_df = role_data[selected_role]
-   
+   # Get appropriate data based on targeting selection
+   if selected_role == 'General Targeting':
+       pain_points_list, value_props_list = get_general_targeting_data(role_data)
+   else:
+       role_df = role_data[selected_role]
+       pain_point_cols = [col for col in role_df.columns if 'Pain_Point_' in col]
+       value_prop_cols = [col for col in role_df.columns if 'Value_Prop_' in col]
+       pain_points_list = role_df[pain_point_cols].values.flatten()
+       value_props_list = role_df[value_prop_cols].values.flatten()
+       
    # Display relevant content based on selections
    st.header("Message Focus")
    
    # Pain Points Selection
-   pain_points = [col for col in role_df.columns if 'Pain_Point_' in col]
    selected_pain_points = st.multiselect(
        "Select Key Pain Points to Address",
-       role_df[pain_points].values.flatten()
+       [p for p in pain_points_list if isinstance(p, str)]
    )
    
    # Value Props Selection
-   value_props = [col for col in role_df.columns if 'Value_Prop_' in col]
    selected_value_props = st.multiselect(
        "Select Value Propositions",
-       role_df[value_props].values.flatten()
+       [v for v in value_props_list if isinstance(v, str)]
    )
    
    # Generate button
@@ -85,7 +112,11 @@ def main():
        # Adjust messaging based on in-market selection
        tone = "bottom-funnel" if is_in_market else "awareness"
        
-       st.write(f"Generating {tone} messaging for {selected_role}")
+       if selected_role == 'General Targeting':
+           st.write("Generating general campaign with broad appeal")
+       else:
+           st.write(f"Generating {tone} messaging for {selected_role}")
+           
        st.write("Campaign Goals:", campaign_goals)
        
        # Show selected content
