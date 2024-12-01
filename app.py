@@ -3,118 +3,104 @@ import pandas as pd
 import numpy as np
 
 @st.cache_data
-def load_and_transform_knowledge_base():
-    try:
-        # Load CSV files
-        roles_df = pd.read_csv('roles_mapping.csv')
-        features_df = pd.read_csv('features_base.csv')
-        audience_df = pd.read_csv('audience_targeting.csv')
-        
-        # Filter for Help Desk only
-        roles_df = roles_df[roles_df['Category_Name'] == 'Help Desk']
-        features_df = features_df[features_df['Category_Name'] == 'Help Desk']
-        audience_df = audience_df[audience_df['Category_Name'] == 'Help Desk']
-        
-        # Get unique seniority levels for Help Desk
-        seniority_cols = [col for col in roles_df.columns if 'Seniority_Level_' in col]
-        seniority_levels = pd.Series(roles_df[seniority_cols].values.ravel()).dropna().unique()
-        
-        # Get unique departments for Help Desk
-        dept_cols = [col for col in roles_df.columns if 'Department_' in col]
-        departments = pd.Series(roles_df[dept_cols].values.ravel()).dropna().unique()
-        
-        # Get pain points for Help Desk
-        pain_point_cols = [col for col in features_df.columns if 'Pain_Point_' in col]
-        pain_points = pd.Series(features_df[pain_point_cols].values.ravel()).dropna().unique()
-        
-        # Get value propositions for Help Desk
-        value_prop_cols = [col for col in features_df.columns if 'Value Prop_' in col]
-        value_props = pd.Series(features_df[value_prop_cols].values.ravel()).dropna().unique()
-        
-        # Get business outcomes for Help Desk
-        outcome_cols = [col for col in features_df.columns if 'Business Outcomes_' in col]
-        outcomes = pd.Series(features_df[outcome_cols].values.ravel()).dropna().unique()
-        
-        return seniority_levels, departments, pain_points, value_props, outcomes, roles_df, features_df, audience_df
-    
-    except Exception as e:
-        st.error(f"Error loading knowledge base: {e}")
-        return None, None, None, None, None, None, None, None
+def load_role_files():
+   try:
+       # Load all role CSV files
+       roles = {
+           'Chief Customer Officer': pd.read_csv('chief-customer-officer.csv'),
+           'VP Customer Support': pd.read_csv('vp-customer-support.csv'),
+           'Senior Director Support': pd.read_csv('senior-director-support.csv'),
+           'Director Customer Operations': pd.read_csv('director-customer-operations.csv'),
+           'Head Customer Support': pd.read_csv('head-customer-support.csv'),
+           'Senior Support Manager': pd.read_csv('senior-support-manager.csv'),
+           'Customer Support Manager': pd.read_csv('customer-support-manager.csv'),
+           'Support Team Lead': pd.read_csv('support-team-lead.csv'),
+           'Technical Support Director': pd.read_csv('technical-support-director.csv'),
+           'Customer Service Director': pd.read_csv('customer-service-director.csv')
+       }
+       return roles
+   except Exception as e:
+       st.error(f"Error loading role files: {e}")
+       return None
 
 def main():
-    # Load transformed knowledge base data
-    seniority_levels, departments, pain_points, value_props, outcomes, roles_df, features_df, audience_df = load_and_transform_knowledge_base()
-    
-    st.title("PPC Campaign Builder")
-    
-    # Sidebar for input selections
-    with st.sidebar:
-        st.header("Campaign Settings")
-        
-        # Product Selection
-        product = st.selectbox(
-            "Select Product",
-            ["Help Desk"]
-        )
-        
-        # Build Type
-        build_type = st.radio(
-            "What would you like to create?",
-            ["Generate Ads Only", "Complete Campaign Structure"]
-        )
-
-    # Main content area
-    st.header("Target Audience Settings")
-    
-    # Role Selection using actual data
-    role_level = st.selectbox(
-        "Select Seniority Level",
-        seniority_levels
-    )
-    
-    # Department Focus using actual data
-    department = st.selectbox(
-        "Select Department",
-        departments
-    )
-    
-    # Pain Points using actual data
-    st.header("Message Focus")
-    selected_pain_points = st.multiselect(
-        "Select Key Pain Points to Address",
-        pain_points
-    )
-    
-    # Value Props using actual data
-    selected_value_props = st.multiselect(
-        "Select Value Propositions",
-        value_props
-    )
-    
-    # Desired Outcomes using actual data
-    selected_outcomes = st.multiselect(
-        "Select Target Outcomes",
-        outcomes
-    )
-    
-    # Generate button
-    if st.button("Generate Campaign"):
-        if build_type == "Generate Ads Only":
-            st.subheader("Generated Ad Variations")
-            # Add ad generation logic here
-            st.write("Ad variations will appear here")
-        else:
-            st.subheader("Campaign Structure")
-            # Add campaign structure generation logic here
-            st.write("Campaign structure will appear here")
-        
-        # Add download button for CSV
-        st.download_button(
-            label="Download Campaign",
-            data="campaign data here",
-            file_name="campaign_structure.csv",
-            mime="text/csv"
-        )
+   st.title("PPC Campaign Builder")
+   
+   # Load role data
+   role_data = load_role_files()
+   
+   if role_data is None:
+       st.error("Failed to load role data")
+       return
+   
+   # Sidebar for main settings
+   with st.sidebar:
+       st.header("Campaign Settings")
+       
+       # Role Selection
+       selected_role = st.selectbox(
+           "Select Role",
+           list(role_data.keys())
+       )
+       
+       # In-Market Checkbox
+       is_in_market = st.checkbox(
+           "In-Market Audience",
+           help="Check for bottom-funnel messaging focused on immediate solutions"
+       )
+   
+   # Main content area
+   st.header("Campaign Goals")
+   
+   # Campaign Goals Text Input
+   campaign_goals = st.text_area(
+       "Describe your campaign goals",
+       placeholder="Example: Looking to increase free trial signups by targeting directors and VPs with a focus on team efficiency and cost savings"
+   )
+   
+   # Get data for selected role
+   role_df = role_data[selected_role]
+   
+   # Display relevant content based on selections
+   st.header("Message Focus")
+   
+   # Pain Points Selection
+   pain_points = [col for col in role_df.columns if 'Pain_Point_' in col]
+   selected_pain_points = st.multiselect(
+       "Select Key Pain Points to Address",
+       role_df[pain_points].values.flatten()
+   )
+   
+   # Value Props Selection
+   value_props = [col for col in role_df.columns if 'Value_Prop_' in col]
+   selected_value_props = st.multiselect(
+       "Select Value Propositions",
+       role_df[value_props].values.flatten()
+   )
+   
+   # Generate button
+   if st.button("Generate Campaign"):
+       st.subheader("Generated Content")
+       
+       # Adjust messaging based on in-market selection
+       tone = "bottom-funnel" if is_in_market else "awareness"
+       
+       st.write(f"Generating {tone} messaging for {selected_role}")
+       st.write("Campaign Goals:", campaign_goals)
+       
+       # Show selected content
+       if selected_pain_points:
+           st.write("Selected Pain Points:", selected_pain_points)
+       if selected_value_props:
+           st.write("Selected Value Props:", selected_value_props)
+           
+       # Add download button for CSV
+       st.download_button(
+           label="Download Campaign",
+           data="campaign data here",
+           file_name="campaign_structure.csv",
+           mime="text/csv"
+       )
 
 if __name__ == '__main__':
-    main()
+   main()
