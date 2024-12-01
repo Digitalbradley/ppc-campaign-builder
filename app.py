@@ -59,6 +59,12 @@ def main():
    with st.sidebar:
        st.header("Campaign Settings")
        
+       # Build Type
+       build_type = st.radio(
+           "What would you like to create?",
+           ["Generate Ads Only", "Complete Campaign Structure"]
+       )
+       
        # Role Selection
        selected_role = st.selectbox(
            "Select Role",
@@ -112,26 +118,52 @@ def main():
        # Adjust messaging based on in-market selection
        tone = "bottom-funnel" if is_in_market else "awareness"
        
-       if selected_role == 'General Targeting':
-           st.write("Generating general campaign with broad appeal")
+       if build_type == "Generate Ads Only":
+           st.subheader("Ad Variations")
+           
+           # Create columns for ad preview
+           col1, col2 = st.columns(2)
+           
+           with col1:
+               st.markdown("**Headlines**")
+               for i, pain in enumerate(selected_pain_points[:3], 1):
+                   st.write(f"Headline {i}: Solve {pain}")
+               
+           with col2:
+               st.markdown("**Descriptions**")
+               for i, prop in enumerate(selected_value_props[:2], 1):
+                   st.write(f"Description {i}: {prop}")
+           
+           # Add download button for ads
+           st.download_button(
+               label="Download Ad Variations",
+               data="ad variations here",
+               file_name="ad_variations.csv",
+               mime="text/csv"
+           )
+           
        else:
-           st.write(f"Generating {tone} messaging for {selected_role}")
+           st.subheader("Campaign Structure")
+           if selected_role == 'General Targeting':
+               st.write("Generating general campaign with broad appeal")
+           else:
+               st.write(f"Generating {tone} messaging for {selected_role}")
+               
+           st.write("Campaign Goals:", campaign_goals)
            
-       st.write("Campaign Goals:", campaign_goals)
-       
-       # Show selected content
-       if selected_pain_points:
-           st.write("Selected Pain Points:", selected_pain_points)
-       if selected_value_props:
-           st.write("Selected Value Props:", selected_value_props)
-           
-       # Add download button for CSV
-       st.download_button(
-           label="Download Campaign",
-           data="campaign data here",
-           file_name="campaign_structure.csv",
-           mime="text/csv"
-       )
+           # Show selected content
+           if selected_pain_points:
+               st.write("Selected Pain Points:", selected_pain_points)
+           if selected_value_props:
+               st.write("Selected Value Props:", selected_value_props)
+               
+           # Add download button for full campaign
+           st.download_button(
+               label="Download Campaign",
+               data="campaign structure here",
+               file_name="campaign_structure.csv",
+               mime="text/csv"
+           )
 
 if __name__ == '__main__':
    main()
