@@ -48,10 +48,10 @@ Broader Targeting:
         'message': "What are your main campaign goals?",
         'next': 'generate'
     },
-    'generate': {
-        'message': "Great! Let's generate your campaign.",
-        'next': 'complete'
-    }
+   'generate': {
+    'message': "Here's what we'll create based on your selections:",
+    'is_final': True  # Add this flag
+},
 }
 
 def main():
