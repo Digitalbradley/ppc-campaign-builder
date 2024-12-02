@@ -30,11 +30,22 @@ stages = {
        ],
        'next': 'market_intent'
    },
-   'market_intent': {
-       'message': "Are you targeting users actively looking for Help Desk solutions?",
-       'options': ["Yes", "No"],
-       'next': 'campaign_goals'
-   },
+'market_intent': {
+    'message': """Would you like to target in-market audiences?
+
+In-Market Targeting:
+✓ Users actively researching Help Desk solutions
+✓ Higher purchase intent
+✓ Higher CPCs but better conversion rates
+
+Broader Targeting:
+✓ Awareness campaigns
+✓ Lower CPCs for testing
+✓ Reach competitor audiences
+✓ Build brand recognition""",
+    'options': ["Yes - Target In-Market Audiences", "No - Broader Targeting"],
+    'next': 'campaign_goals'
+},
    'campaign_goals': {
        'message': "What are your main campaign goals?",
        'next': 'generate'
