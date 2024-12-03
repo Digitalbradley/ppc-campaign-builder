@@ -1,5 +1,9 @@
 import streamlit as st
 import pandas as pd
+from anthropic import Anthropic
+import os
+# Initialize Anthropic client
+anthropic = Anthropic(api_key=st.secrets["ANTHROPIC_API_KEY"])
 
 # Initialize session state
 if 'stage' not in st.session_state:
