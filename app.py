@@ -4,7 +4,7 @@ from anthropic import Anthropic
 import os
 
 # Initialize Anthropic client
-anthropic = Anthropic(api_key=st.secrets["ANTHROPIC_API_KEY"])
+anthropic = Anthropic(api_key=st.secrets["ANTHROPIC_API_KEY"], base_url=None)
 
 # Initialize session state
 if 'stage' not in st.session_state:
