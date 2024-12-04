@@ -1,17 +1,10 @@
 import streamlit as st
 import pandas as pd
-from anthropic import Anthropic
-import os
 
-# Initialize Anthropic client
-anthropic = Anthropic(api_key=st.secrets["ANTHROPIC_API_KEY"], base_url=None)
-
-# Initialize session state
 if 'stage' not in st.session_state:
     st.session_state.stage = 'welcome'
     st.session_state.responses = {}
 
-# Load role data function
 @st.cache_data
 def load_role_data(role):
     try:
@@ -22,28 +15,30 @@ def load_role_data(role):
         st.error(f"Error loading role data: {e}")
         return None
 
-def generate_ad_content(role_data, is_in_market, goals):
-    prompt = f"""
-    Create PPC ad content based on:
-    Role: {role_data['Job_Title']}
-    Pain Points: {role_data['Pain_Points']}
-    Value Props: {role_data['Value_Props']}
-    Goals: {goals}
-    Audience: {'In-Market' if is_in_market else 'Awareness'}
+def generate_ads_preview(role, is_in_market, goals):
+    st.subheader("Ad Preview")
+    col1, col2 = st.columns(2)
     
-    Generate:
-    - 15 headlines (30 characters max)
-    - 4 descriptions (90 characters max)
-    """
+    with col1:
+        st.markdown("**Headlines (15)**")
+        st.text("1. Example Headline 1")
+        st.text("2. Example Headline 2")
+        st.text("3. Example Headline 3")
     
-    message = anthropic.messages.create(
-        model="claude-3-opus-20240229",
-        max_tokens=1000,
-        temperature=0.7,
-        messages=[{"role": "user", "content": prompt}]
-    )
+    with col2:
+        st.markdown("**Descriptions (4)**")
+        st.text("1. Example Description 1")
+        st.text("2. Example Description 2")
+
+def generate_campaign_preview(role, is_in_market, goals):
+    st.subheader("Campaign Structure")
+    st.markdown("**Ad Groups**")
+    num_groups = st.number_input("Number of Ad Groups", 1, 10, 1)
     
-    return message.content
+    for i in range(num_groups):
+        with st.expander(f"Ad Group {i+1}"):
+            st.text_input("Ad Group Name", key=f"ag_name_{i}")
+            st.text_area("Keywords (one per line)", key=f"keywords_{i}")
 
 stages = {
     'welcome': {
@@ -93,45 +88,6 @@ Broader Targeting:
         'is_final': True
     }
 }
-
-def generate_ads_preview(role, is_in_market, goals):
-    """Generate ad preview based on role data and AI"""
-    # Load role data
-    role_df = load_role_data(role)
-    
-    if role_df is not None:
-        # Generate content using Anthropic
-        ad_content = generate_ad_content(role_df, is_in_market, goals)
-        
-        st.subheader("Ad Preview")
-        col1, col2 = st.columns(2)
-        
-        with col1:
-            st.markdown("**Headlines (15)**")
-            # Parse and display headlines from AI response
-            headlines = ad_content.split("Headlines:")[1].split("Descriptions:")[0].strip().split("\n")
-            for i, headline in enumerate(headlines[:15], 1):
-                st.text(f"{i}. {headline}")
-            
-        with col2:
-            st.markdown("**Descriptions (4)**")
-            # Parse and display descriptions from AI response
-            descriptions = ad_content.split("Descriptions:")[1].strip().split("\n")
-            for i, desc in enumerate(descriptions[:4], 1):
-                st.text(f"{i}. {desc}")
-
-def generate_campaign_preview(role, is_in_market, goals):
-    """Generate campaign structure preview"""
-    st.subheader("Campaign Structure")
-    
-    # Ad Groups Section
-    st.markdown("**Ad Groups**")
-    num_groups = st.number_input("Number of Ad Groups", 1, 10, 1)
-    
-    for i in range(num_groups):
-        with st.expander(f"Ad Group {i+1}"):
-            st.text_input("Ad Group Name", key=f"ag_name_{i}")
-            st.text_area("Keywords (one per line)", key=f"keywords_{i}")
 
 def main():
     st.title("PPC Campaign Builder")
