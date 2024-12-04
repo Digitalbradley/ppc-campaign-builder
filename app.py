@@ -30,15 +30,32 @@ def generate_ads_preview(role, is_in_market, goals):
         st.text("1. Example Description 1")
         st.text("2. Example Description 2")
 
-def generate_campaign_preview(role, is_in_market, goals):
-    st.subheader("Campaign Structure")
-    st.markdown("**Ad Groups**")
-    num_groups = st.number_input("Number of Ad Groups", 1, 10, 1)
-    
-    for i in range(num_groups):
-        with st.expander(f"Ad Group {i+1}"):
-            st.text_input("Ad Group Name", key=f"ag_name_{i}")
-            st.text_area("Keywords (one per line)", key=f"keywords_{i}")
+def generate_ads_preview(role, is_in_market, goals):
+    role_df = load_role_data(role)
+    if role_df is not None:
+        st.subheader("Ad Preview")
+        col1, col2 = st.columns(2)
+        
+        with col1:
+            st.markdown("**Headlines based on role data:**")
+            pain_points = [col for col in role_df.columns if 'Pain_Point_' in col]
+            value_props = [col for col in role_df.columns if 'Value_Prop_' in col]
+            
+            # Generate headlines using pain points and value props
+            for i, (pain, value) in enumerate(zip(role_df[pain_points].iloc[0], 
+                                                role_df[value_props].iloc[0]), 1):
+                if pd.notna(pain) and pd.notna(value):
+                    st.text(f"{i}. Solve {pain} with {value}")
+        
+        with col2:
+            st.markdown("**Descriptions based on role data:**")
+            features = [col for col in role_df.columns if 'Feature_' in col]
+            benefits = [col for col in role_df.columns if 'Benefit_' in col]
+            
+            for i, (feature, benefit) in enumerate(zip(role_df[features].iloc[0], 
+                                                     role_df[benefits].iloc[0]), 1):
+                if pd.notna(feature) and pd.notna(benefit):
+                    st.text(f"{i}. {feature} delivers {benefit}")
 
 stages = {
     'welcome': {
