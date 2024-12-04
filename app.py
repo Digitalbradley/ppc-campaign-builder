@@ -7,6 +7,13 @@ if 'stage' not in st.session_state:
 
 @st.cache_data
 def load_role_data(role):
+    if role == "General Campaign":
+        return pd.DataFrame({
+            'Pain_Point_1': ['High support costs'],
+            'Value_Prop_1': ['Reduce operational costs'],
+            'Feature_1': ['Automation tools'],
+            'Benefit_1': ['30% cost reduction']
+        })
     try:
         filename = role.lower().replace(" ", "-") + ".csv"
         role_df = pd.read_csv(filename)
